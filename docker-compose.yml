@@ -1,0 +1,51 @@
+services:
+  # 1. MongoDB Database Service
+  mongo:
+    image: mongo:latest
+    container_name: adaptive-db
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  # 2. Backend API Service (Node.js/Express)
+  server:
+    build: ./server
+    container_name: adaptive-api
+    ports:
+      - '5001:5001'
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+      - MONGO_URI=mongodb://mongo:27017/adaptive-learning
+      - JWT_SECRET=YOUR_SUPER_SECRET_KEY_HERE
+    depends_on:
+      - mongo
+    restart: always
+
+  # 3. Frontend UI Service (React)
+  client:
+    build: ./client
+    container_name: adaptive-client
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    environment: # 👈 This is the new part you added
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - server
+    restart: always
+
+# 👇 THIS IS THE CRITICAL PART
+# It must be at the bottom and NOT indented
+volumes:
+  mongo-data:
+    driver: local
