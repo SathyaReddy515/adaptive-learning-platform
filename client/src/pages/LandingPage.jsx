@@ -54,9 +54,9 @@ const LandingPage = () => {
                   Our **adaptive learning platform** creates a unique path for every learner. Stop wasting time on what you already know and focus on what's next.
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  <button className="flex items-center justify-center bg-blue-600 text-white px-8 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors shadow-lg">
+                 <a href="#contact" className="flex items-center justify-center bg-blue-600 text-white px-8 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors shadow-lg">
                     Get Started <ArrowRight className="h-5 w-5 ml-2" />
-                  </button>
+                  </a>
                   <a href="#features" className="flex items-center justify-center bg-gray-100 text-gray-800 px-8 py-3 rounded-md text-base font-medium hover:bg-gray-200 transition-colors shadow-lg">
                     View Features
                   </a>

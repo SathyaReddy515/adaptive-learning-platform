@@ -40,9 +40,7 @@ const QuestionList = () => {
     };
 
     fetchQuestions();
-  }, []); // The empty array means this runs once when the component mounts
-
-  // --- Render Logic ---
+  }, []); 
 
   if (loading) {
     return (
@@ -66,7 +64,8 @@ const QuestionList = () => {
   }
 
   return (
-    <div className="space-y-4">
+    // 🚀 FIX 1: Add fixed height and scrollbar classes
+    <div className="space-y-4 max-h-96 overflow-y-auto pr-2"> 
       {questions.map((q, index) => (
         <div key={q._id} className="bg-gray-50 p-4 rounded-lg border">
           <p className="text-sm text-gray-500">
