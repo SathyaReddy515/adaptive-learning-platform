@@ -21,15 +21,19 @@ const StudentAnalyticsTable = () => {
           config
         );
         
-        // Convert the returned mastery object (which is a serialized Map) back into a proper Map object
-        const formattedData = data.map(student => ({
+ const formattedData = data.map(student => ({
             ...student,
-            // CRITICAL FIX: The backend sends a plain object; convert it to a JS Map for iteration
+            // 🚀 CRITICAL FIX: The backend now sends a standard object, so we convert that object directly to a Map.
             mastery: student.mastery && typeof student.mastery === 'object' 
                 ? new Map(Object.entries(student.mastery))
                 : new Map() 
         }));
         setAnalytics(formattedData);
+        
+        // 🎯 DEBUG LOG 1: Log the data after it's received and mapped on the client side
+        console.log("--- CLIENT RECEIVED DATA (FORMATTED) ---");
+        console.log(formattedData);
+        console.log("------------------------------------------");
 
       } catch (err) {
         // If 401/403, we show the specific unauthorized message
@@ -50,20 +54,29 @@ const StudentAnalyticsTable = () => {
     let totalScore = 0;
     let totalTopics = 0;
     
-    // 🚀 FINAL FIX: Use masteryMap.values() to iterate over the nested score objects
+    // 🚀 FINAL FIX: Use masteryMap.values() for reliable calculation
     for (const data of masteryMap.values()) {
-        // Ensure scores are numbers before summing (Safety check)
-        const score = Number(data.score);
-        if (!isNaN(score)) {
+        const score = Number(data.score); 
+        const attempts = Number(data.totalAttempts); 
+
+        // CRITICAL CHECK: Only include topics that have valid numeric scores AND attempts > 0
+        if (!isNaN(score) && attempts > 0) {
             totalScore += score;
             totalTopics++;
+        } else if (attempts > 0 && isNaN(score)) {
+            // Safety check for corruption, though backend should prevent this
+            console.error(`Mastery Calculation Error: Score for topic is NaN despite having attempts.`);
         }
     }
     
+    // If no topics have been attempted yet, show 'Not Started'
     if (totalTopics === 0) return <span>Not Started</span>;
 
     const averageScore = Math.round((totalScore / totalTopics) * 100);
     const color = averageScore >= 70 ? 'bg-green-500' : averageScore >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+
+    // 🎯 DEBUG LOG 3: Show the final calculation result in the console
+    console.log(`Student Analytics: Calculated Average Score: ${averageScore}%`);
 
     return (
         <div className="w-full">
@@ -107,7 +120,7 @@ const StudentAnalyticsTable = () => {
                 {student.mastery.size === 0 ? (
                     <span className="text-gray-400">Not Started</span>
                 ) : (
-                    // FIX: Use .entries() for safe iteration over Map structure
+                    // This iteration correctly renders the breakdown
                     Array.from(student.mastery.entries()).map(([topic, data]) => (
                         <span key={topic} className="inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
                             {topic}: {Math.round(data.score * 100)}%

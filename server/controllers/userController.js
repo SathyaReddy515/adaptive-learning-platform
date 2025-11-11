@@ -97,8 +97,6 @@ exports.getStudentDashboardData = async (req, res) => {
 };
 
 // @desc    Get all students and their mastery data
-// @route   GET /api/users/analytics/students
-// @access  Private (Admin/Instructor)
 exports.getAllStudentAnalytics = async (req, res) => {
   try {
     const students = await User.find({ role: 'student' }).select('-password').lean();
@@ -113,15 +111,20 @@ exports.getAllStudentAnalytics = async (req, res) => {
       
       const rawMasteryData = model?.mastery || {};
       
-      // 🚀 FINAL FIX: Use Object.entries and explicitly convert scores to Number 
-      // immediately upon Map creation to guarantee numeric types for the frontend.
-      const masteryMap = new Map();
-      if (typeof rawMasteryData === 'object') {
-          for (const [topic, data] of Object.entries(rawMasteryData)) {
-              masteryMap.set(topic, {
-                  score: Number(data.score), // FORCE CONVERSION
-                  totalAttempts: Number(data.totalAttempts) // FORCE CONVERSION
-              });
+      // Convert raw mastery data into a clean object with forced numeric types
+      const cleanMasteryObject = {};
+      if (typeof rawMasteryData === 'object' && rawMasteryData !== null) {
+          for (const topic in rawMasteryData) {
+              if (rawMasteryData.hasOwnProperty(topic)) {
+                  const data = rawMasteryData[topic];
+                  
+                  if (typeof data === 'object' && data !== null && 'score' in data) {
+                      cleanMasteryObject[topic] = {
+                          score: Number(data.score), 
+                          totalAttempts: Number(data.totalAttempts)
+                      };
+                  }
+              }
           }
       }
       
@@ -129,7 +132,8 @@ exports.getAllStudentAnalytics = async (req, res) => {
         id: student._id,
         name: student.name,
         email: student.email,
-        mastery: masteryMap, 
+        // 🚀 CRITICAL FIX: Send the simple clean object, not the complex Map, to the browser
+        mastery: cleanMasteryObject, 
         totalAttempts: model?.attemptHistory?.length || 0
       };
     });
