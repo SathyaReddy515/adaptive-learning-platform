@@ -6,7 +6,6 @@ const hashedPasswords =
   '$2a$10$f1s2lWtDUBirMimPfxYp3OToGEAR7IllPI85QR0gRHR.szrNXE15C',
   '$2a$10$rQwo22lRMOxVtQc3uqwzweQzSyQSXBIOe7JHlqzKaP6nsTwgpylOm'
 ]
-
 const users = [
   {
     name: 'Admin User',
